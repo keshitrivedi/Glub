@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../config/supabase_config.dart';
+import '../../../services/notification_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../onboarding/models/onboarding_data.dart';
 import '../../onboarding/screens/action_selection_screen.dart';
@@ -789,69 +788,45 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
 
     setState(() => _isSaving = true);
 
-    try {
-      if (!SupabaseConfig.isConfigured) {
-        throw Exception(
-          'Supabase is not configured. Please pass SUPABASE_URL and SUPABASE_ANON_KEY.',
-        );
-      }
-      if (SupabaseConfig.profileId.isEmpty) {
-        throw Exception(
-          'PROFILE_ID is required for medicine_logs insert. '
-          'Pass --dart-define=PROFILE_ID=<existing onboarding_profiles.profile_id>',
-        );
-      }
+    // Medicines are stored in-memory only. Database logging is disabled.
+    await Future.delayed(const Duration(milliseconds: 300)); // simulate brief save
 
-      final rows = _loggedMedicines.map((m) {
-        return {
-          'profile_id': SupabaseConfig.profileId,
-          'medicine_name': m.medicineName,
-          'company': m.company,
-          'medicine_type': m.medicineType,
-          'oral_timing': m.oralTiming,
-          'dose_unit': m.doseUnit,
-          'insulin_profile': m.insulinProfile,
-          'injection_site': m.injectionSite,
-          'quantity': m.quantity,
-          'dose_time': m.doseTime,
-          'days': m.days,
-          'take_with_food': m.takeWithFood,
-          'check_bg_before_dose': m.checkBgBeforeDose,
-          'override_target_glucose': m.overrideTargetGlucose,
-          'target_low': m.targetLow,
-          'target_high': m.targetHigh,
-          'notes': m.notes,
-        };
-      }).toList();
+    // Schedule a notification for each medicine due today.
+    final List<Map<String, dynamic>> medicinePayloads = _loggedMedicines
+        .map(
+          (m) => {
+            'medicineName': m.medicineName,
+            'quantity': m.quantity,
+            'doseUnit': m.doseUnit,
+            'doseTime': m.doseTime,
+            'days': m.days,
+          },
+        )
+        .toList();
 
-      await Supabase.instance.client.from('medicine_logs').insert(rows);
+    await NotificationService.instance.scheduleMedicineReminders(medicinePayloads);
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'} to database.',
-          ),
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'} saved.',
         ),
-      );
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => ActionSelectionScreen(data: widget.data),
-        ),
-        (route) => false,
-      );
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not save medicine logs: $error'),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+
+    setState(() => _isSaving = false);
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => ActionSelectionScreen(data: widget.data),
+      ),
+      (route) => false,
+    );
   }
 
   Widget _buildBottomActions() {

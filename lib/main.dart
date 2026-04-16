@@ -1,28 +1,11 @@
-// main.dart
-// After refactor: only app bootstrap lives here.
-// SpeechScreen, VoiceService, and NumberParser have moved out.
-
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'config/supabase_config.dart';
 import 'features/onboarding/screens/splash_screen.dart';
+import 'services/notification_service.dart';
 import 'theme/app_colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (SupabaseConfig.isConfigured) {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.anonKey,
-    );
-  } else {
-    debugPrint(
-      'Supabase is not configured. '
-      'Provide SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define.',
-    );
-  }
-
+  await NotificationService.instance.init();
   runApp(const MyApp());
 }
 

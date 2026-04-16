@@ -20,4 +20,10 @@ class AppColors {
   static const Color success = Color(0xFF2F7D32);
 
   static const Color white = Colors.white;
+
+  // Aliases for new naming convention
+  static const Color backgroundGreen = background;
+  static const Color beigeUnselected = inputBackground;
+  static const Color lightGreenCard = lightGreen;
+  static const Color backgroundWhite = Colors.white;
 }
