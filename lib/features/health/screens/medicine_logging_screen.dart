@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../services/notification_service.dart';
 import '../../../theme/app_colors.dart';
+import '../../home/screens/tech_home_screen.dart';
 import '../../onboarding/models/onboarding_data.dart';
 import '../../onboarding/screens/action_selection_screen.dart';
 
@@ -821,9 +822,12 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
 
     setState(() => _isSaving = false);
 
+    final bool isProficient = widget.data.isTechProficient == true;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => ActionSelectionScreen(data: widget.data),
+        builder: (context) => isProficient
+            ? TechHomeScreen(data: widget.data)
+            : ActionSelectionScreen(data: widget.data),
       ),
       (route) => false,
     );
@@ -835,18 +839,23 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
       children: [
         TextButton(
           onPressed: () {
+            final bool isProficient = widget.data.isTechProficient == true;
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => ActionSelectionScreen(data: widget.data),
+                builder: (context) => isProficient
+                    ? TechHomeScreen(data: widget.data)
+                    : ActionSelectionScreen(data: widget.data),
               ),
               (route) => false,
             );
           },
-          child: const Align(
+          child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '< Back to actions',
-              style: TextStyle(
+              widget.data.isTechProficient == true
+                  ? '< Back to home'
+                  : '< Back to actions',
+              style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.textDark,
                 fontWeight: FontWeight.w600,

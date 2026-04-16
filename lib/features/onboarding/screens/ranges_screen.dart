@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../models/onboarding_data.dart';
+import '../../health/screens/medicine_logging_screen.dart';
 import '../../home/screens/tech_home_screen.dart';
 import 'action_selection_screen.dart';
 
@@ -27,6 +28,7 @@ class _RangesScreenState extends State<RangesScreen> {
     debugPrint('Onboarding Completed: ${widget.data.toString()}');
 
     if (widget.data.isTechProficient == false) {
+      // Non-proficient → action selection hub
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => ActionSelectionScreen(data: widget.data),
@@ -34,9 +36,10 @@ class _RangesScreenState extends State<RangesScreen> {
         (Route<dynamic> route) => false,
       );
     } else {
+      // Proficient → collect medicines first, then go to TechHomeScreen
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => TechHomeScreen(data: widget.data),
+          builder: (context) => MedicineLoggingScreen(data: widget.data),
         ),
         (Route<dynamic> route) => false,
       );
