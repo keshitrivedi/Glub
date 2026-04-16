@@ -1,46 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../theme/app_colors.dart';
+import '../../../services/ocr_service.dart';
+import '../../../services/supabase_service.dart';
+import '../../../models/logged_medicine.dart';
 import '../../onboarding/models/onboarding_data.dart';
 import '../../onboarding/screens/action_selection_screen.dart';
-
-class LoggedMedicine {
-  final String medicineName;
-  final String company;
-  final String medicineType;
-  final String oralTiming;
-  final String doseUnit;
-  final String insulinProfile;
-  final String injectionSite;
-  final String quantity;
-  final String doseTime;
-  final List<String> days;
-  final bool takeWithFood;
-  final bool checkBgBeforeDose;
-  final bool overrideTargetGlucose;
-  final String targetLow;
-  final String targetHigh;
-  final String notes;
-
-  const LoggedMedicine({
-    required this.medicineName,
-    required this.company,
-    required this.medicineType,
-    required this.oralTiming,
-    required this.doseUnit,
-    required this.insulinProfile,
-    required this.injectionSite,
-    required this.quantity,
-    required this.doseTime,
-    required this.days,
-    required this.takeWithFood,
-    required this.checkBgBeforeDose,
-    required this.overrideTargetGlucose,
-    required this.targetLow,
-    required this.targetHigh,
-    required this.notes,
-  });
-}
 
 class MedicineLoggingScreen extends StatefulWidget {
   final OnboardingData data;
@@ -68,7 +34,9 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   late final TextEditingController _companyController;
   late final TextEditingController _quantityController;
   late final TextEditingController _notesController;
-  late final TextEditingController _buildBottomActions;
+  late final SupabaseService _supabaseService;
+  late final OcrService _ocrService;
+  bool _isScanningPrescription = false;
 
   late final TextEditingController _targetLowController;
   late final TextEditingController _targetHighController;
@@ -91,6 +59,8 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   @override
   void initState() {
     super.initState();
+    _supabaseService = SupabaseService();
+    _ocrService = OcrService();
     _medicineNameController = TextEditingController();
     _companyController = TextEditingController();
     _quantityController = TextEditingController(text: '1');
@@ -112,6 +82,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
     _notesController.dispose();
     _targetLowController.dispose();
     _targetHighController.dispose();
+    _ocrService.dispose();
     super.dispose();
   }
 
@@ -130,6 +101,22 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: FloatingActionButton.small(
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: AppColors.white,
+        onPressed: _isScanningPrescription ? null : _scanPrescriptionToText,
+        tooltip: 'Scan prescription (OCR)',
+        child: _isScanningPrescription
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.white,
+                ),
+              )
+            : const Icon(Icons.camera_alt_rounded),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -305,6 +292,95 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _scanPrescriptionToText() async {
+    final fromCamera = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppColors.white,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Scan prescription',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_rounded),
+                  title: const Text('Take a photo'),
+                  onTap: () => Navigator.of(context).pop(true),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_rounded),
+                  title: const Text('Choose from gallery'),
+                  onTap: () => Navigator.of(context).pop(false),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (fromCamera == null || !mounted) return;
+
+    setState(() => _isScanningPrescription = true);
+    final result = await _ocrService.scanPrescription(fromCamera: fromCamera);
+    if (!mounted) return;
+    setState(() => _isScanningPrescription = false);
+
+    if (!result.success || (result.text ?? '').trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Could not read text from image.'),
+        ),
+      );
+      return;
+    }
+
+    final text = result.text!.trim();
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Extracted text'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: SelectableText(text),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: text));
+                if (context.mounted) Navigator.of(context).pop();
+                if (mounted) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(content: Text('Copied to clipboard.')),
+                  );
+                }
+              },
+              child: const Text('Copy'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -756,108 +832,115 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
         _loggedMedicines.add(medicine);
         _resetFormForNextMedicine();
       });
-    } else if (_loggedMedicines.isEmpty) {
+    }
+
+    if (_loggedMedicines.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Add at least one medicine before continuing.'),
         ),
       );
-      for (final medicine in _loggedMedicines) {
-        final result = await _supabaseService.saveMedicineLog(
-          profileId: widget.data.profileId ??
-              '', // pass profileId through OnboardingData
-          medicine: medicine,
-        );
-        if (!result.isSuccess && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Failed to save ${medicine.medicineName}: ${result.errorMessage}')),
-          );
-          return;
-        }
+      return;
+    }
 
+    for (final medicine in _loggedMedicines) {
+      final result = await _supabaseService.saveMedicineLog(
+        profileId: widget.data.profileId ?? '',
+        medicine: medicine,
+      );
+      if (!result.isSuccess && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'}.',
+              'Failed to save ${medicine.medicineName}: ${result.errorMessage}',
             ),
           ),
         );
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => ActionSelectionScreen(data: widget.data),
-          ),
-          (route) => false,
-        );
+        return;
       }
     }
-    Widget _buildBottomActions() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ActionSelectionScreen(data: widget.data),
-                ),
-                (route) => false,
-              );
-            },
-            child: const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '< Back to actions',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.w600,
-                ),
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'}.',
+        ),
+      ),
+    );
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => ActionSelectionScreen(data: widget.data),
+      ),
+      (route) => false,
+    );
+  }
+
+  Widget _buildBottomActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => ActionSelectionScreen(data: widget.data),
+              ),
+              (route) => false,
+            );
+          },
+          child: const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '< Back to actions',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 52,
-            child: OutlinedButton.icon(
-              onPressed: _addAnotherMedicine,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryGreen,
-                side: const BorderSide(color: AppColors.primaryGreen),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              icon: const Icon(Icons.add),
-              label: const Text(
-                'Add another medicine',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: _addAnotherMedicine,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primaryGreen,
+              side: const BorderSide(color: AppColors.primaryGreen),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGreen,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              onPressed: _saveAndContinue,
-              child: const Text(
-                'Save medicines',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
+            icon: const Icon(Icons.add),
+            label: const Text(
+              'Add another medicine',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
-        ],
-      );
-    }
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 52,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            onPressed: _saveAndContinue,
+            child: const Text(
+              'Save medicines',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

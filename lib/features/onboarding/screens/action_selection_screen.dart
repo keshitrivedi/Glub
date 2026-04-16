@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
+import '../../settings/widgets/prescription_scanner_screen.dart';
 import '../../health/screens/blood_sugar_levels_screen.dart';
 import '../../health/screens/medicine_logging_screen.dart';
 import '../models/onboarding_data.dart';
@@ -15,12 +16,11 @@ class ActionSelectionScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Top Bar with Logo and Title
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -33,9 +33,7 @@ class ActionSelectionScreen extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                      ),
+                      child: Image.asset('assets/images/logo.png'),
                     ),
                   ),
                   const Expanded(
@@ -46,42 +44,36 @@ class ActionSelectionScreen extends StatelessWidget {
                         fontFamily: 'Inter',
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
+                        color: AppColors.textDark,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 50), // To balance the row and keep 'glub' truly centered
+                  const SizedBox(width: 50),
                 ],
               ),
               const SizedBox(height: 40),
-              
-              // Medicine Button
-              Expanded(
-                child: _buildActionButton(
-                  context: context,
-                  label: 'Medicine',
-                  onTap: () => _navigateToMedicine(context),
-                ),
+              _buildActionButton(
+                context: context,
+                label: 'Medicine',
+                onTap: () => _navigateToMedicine(context),
               ),
               const SizedBox(height: 24),
-              
-              // Logging Button
-              Expanded(
-                child: _buildActionButton(
-                  context: context,
-                  label: 'Logging',
-                  onTap: () => _navigateToBloodSugarLogging(context),
-                ),
+              _buildActionButton(
+                context: context,
+                label: 'Scan Prescription',
+                onTap: () => _navigateToPrescriptionScanner(context),
               ),
               const SizedBox(height: 24),
-              
-              // Exercises Button
-              Expanded(
-                child: _buildActionButton(
-                  context: context,
-                  label: 'Exercises',
-                  onTap: () => _navigateToExercises(context),
-                ),
+              _buildActionButton(
+                context: context,
+                label: 'Logging',
+                onTap: () => _navigateToBloodSugarLogging(context),
+              ),
+              const SizedBox(height: 24),
+              _buildActionButton(
+                context: context,
+                label: 'Exercises',
+                onTap: () => _navigateToExercises(context),
               ),
               const SizedBox(height: 40),
             ],
@@ -99,6 +91,7 @@ class ActionSelectionScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 120,
         decoration: BoxDecoration(
           color: AppColors.primaryGreen,
           borderRadius: BorderRadius.circular(32),
@@ -141,6 +134,14 @@ class ActionSelectionScreen extends StatelessWidget {
         builder: (context) => BloodSugarLevelsScreen(data: data),
       ),
       (Route<dynamic> route) => false,
+    );
+  }
+
+  void _navigateToPrescriptionScanner(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const PrescriptionScannerScreen(),
+      ),
     );
   }
 }

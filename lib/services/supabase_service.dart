@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/onboarding/models/onboarding_data.dart';
 import '../features/onboarding/models/onboarding_data_mapper.dart';
+import '../models/logged_medicine.dart';
 import 'supabase_config.dart';
 
 SupabaseClient get supabaseClient => Supabase.instance.client;
