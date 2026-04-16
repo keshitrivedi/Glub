@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../models/onboarding_data.dart';
 import '../../voice/screens/speech_screen.dart'; // Target navigation
+import 'action_selection_screen.dart';
 
 class RangesScreen extends StatefulWidget {
   final OnboardingData data;
@@ -25,11 +26,17 @@ class _RangesScreenState extends State<RangesScreen> {
     // Print data to show it's stored
     debugPrint('Onboarding Completed: ${widget.data.toString()}');
 
-    // Navigate to SpeechScreen (main app screen) and clear history
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const SpeechScreen()),
-      (Route<dynamic> route) => false,
-    );
+    if (widget.data.isTechProficient == false) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const ActionSelectionScreen()),
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const SpeechScreen()),
+        (Route<dynamic> route) => false,
+      );
+    }
   }
 
   @override

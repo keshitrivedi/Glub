@@ -30,63 +30,10 @@ class CaretakerScreen extends StatelessWidget {
               ),
               const SizedBox(height: 50),
               Center(
-                child: Container(
+                child: Image.asset(
+                  'assets/images/smiley.png',
                   width: 120,
                   height: 120,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Left Eye
-                      Positioned(
-                        left: 35,
-                        top: 40,
-                        child: Container(
-                          width: 12,
-                          height: 24,
-                          decoration: const BoxDecoration(
-                            color: AppColors.lightGreen,
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                        ),
-                      ),
-                      // Right Eye
-                      Positioned(
-                        right: 35,
-                        top: 40,
-                        child: Container(
-                          width: 12,
-                          height: 24,
-                          decoration: const BoxDecoration(
-                            color: AppColors.lightGreen,
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                        ),
-                      ),
-                      // Smile
-                      Positioned(
-                        bottom: 30,
-                        child: Container(
-                          width: 50,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(width: 5, color: AppColors.lightGreen),
-                            ),
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(30),
-                              bottomRight: Radius.circular(30),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
               const SizedBox(height: 50),

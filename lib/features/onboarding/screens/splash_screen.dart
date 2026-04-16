@@ -16,24 +16,10 @@ class SplashScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              // Simulating Logo
-              Container(
+              Image.asset(
+                'assets/images/logo.png',
                 width: 120,
                 height: 120,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryGreen,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Text(
-                    'G+',
-                    style: TextStyle(
-                      fontSize: 50,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
               ),
               const Spacer(),
               Padding(
