@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../models/onboarding_data.dart';
 import '../../voice/screens/speech_screen.dart'; // Target navigation
-import 'action_selection_screen.dart';
+import '../../health/screens/medicine_logging_screen.dart';
 
 class RangesScreen extends StatefulWidget {
   final OnboardingData data;
@@ -29,7 +29,7 @@ class _RangesScreenState extends State<RangesScreen> {
     if (widget.data.isTechProficient == false) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => ActionSelectionScreen(data: widget.data),
+          builder: (context) => MedicineLoggingScreen(data: widget.data),
         ),
         (Route<dynamic> route) => false,
       );

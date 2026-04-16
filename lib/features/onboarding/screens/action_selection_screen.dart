@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../health/screens/blood_sugar_levels_screen.dart';
+import '../../health/screens/medicine_logging_screen.dart';
 import '../models/onboarding_data.dart';
-import '../../voice/screens/speech_screen.dart';
+import '../../exercises/screens/exercise_selection_screen.dart';
 
 class ActionSelectionScreen extends StatelessWidget {
   final OnboardingData data;
@@ -59,7 +60,7 @@ class ActionSelectionScreen extends StatelessWidget {
                 child: _buildActionButton(
                   context: context,
                   label: 'Medicine',
-                  onTap: () => _navigateToVoice(context),
+                  onTap: () => _navigateToMedicine(context),
                 ),
               ),
               const SizedBox(height: 24),
@@ -79,7 +80,7 @@ class ActionSelectionScreen extends StatelessWidget {
                 child: _buildActionButton(
                   context: context,
                   label: 'Exercises',
-                  onTap: () => _navigateToVoice(context),
+                  onTap: () => _navigateToExercises(context),
                 ),
               ),
               const SizedBox(height: 40),
@@ -116,9 +117,20 @@ class ActionSelectionScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToVoice(BuildContext context) {
+  void _navigateToMedicine(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const SpeechScreen()),
+      MaterialPageRoute(
+        builder: (context) => MedicineLoggingScreen(data: data),
+      ),
+      (Route<dynamic> route) => false,
+    );
+  }
+
+  void _navigateToExercises(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const ExerciseSelectionScreen(),
+      ),
       (Route<dynamic> route) => false,
     );
   }
