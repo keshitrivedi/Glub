@@ -1,0 +1,121 @@
+import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
+import '../models/onboarding_data.dart';
+import 'diabetes_type_screen.dart';
+
+class CaretakerScreen extends StatelessWidget {
+  final OnboardingData data;
+
+  const CaretakerScreen({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(),
+              const Text(
+                'Please give the device to your\ncaretaker to log the details for\nyou',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 50),
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryGreen,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Left Eye
+                      Positioned(
+                        left: 35,
+                        top: 40,
+                        child: Container(
+                          width: 12,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: AppColors.lightGreen,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      // Right Eye
+                      Positioned(
+                        right: 35,
+                        top: 40,
+                        child: Container(
+                          width: 12,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: AppColors.lightGreen,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      // Smile
+                      Positioned(
+                        bottom: 30,
+                        child: Container(
+                          width: 50,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(width: 5, color: AppColors.lightGreen),
+                            ),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(30),
+                              bottomRight: Radius.circular(30),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DiabetesTypeScreen(data: data),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.white,
+                  foregroundColor: AppColors.textDark,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: AppColors.textDark.withOpacity(0.5)),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text('Okay', style: TextStyle(fontSize: 16)),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
