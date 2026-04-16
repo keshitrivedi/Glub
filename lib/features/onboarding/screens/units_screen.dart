@@ -34,6 +34,11 @@ class _UnitsScreenState extends State<UnitsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const Text(
+          'Glub',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
@@ -51,7 +56,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: AppColors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
@@ -139,7 +144,9 @@ class _UnitsScreenState extends State<UnitsScreen> {
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.lightGreen : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? AppColors.primaryGreen : AppColors.textDark.withOpacity(0.2),
+                  color: isSelected
+                      ? AppColors.primaryGreen
+                      : AppColors.textDark.withValues(alpha: 51),
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),

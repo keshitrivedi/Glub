@@ -21,6 +21,11 @@ class InsulinTherapyScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const Text(
+          'Glub',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
@@ -46,7 +51,7 @@ class InsulinTherapyScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: AppColors.lightGreen,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -65,12 +70,14 @@ class InsulinTherapyScreen extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.background,
+                          backgroundColor: AppColors.inputBackground,
                           foregroundColor: AppColors.textDark,
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
-                            side: BorderSide(color: AppColors.textDark.withOpacity(0.1)),
+                            side: BorderSide(
+                              color: AppColors.textDark.withValues(alpha: 26),
+                            ),
                           ),
                           elevation: 0,
                         ),

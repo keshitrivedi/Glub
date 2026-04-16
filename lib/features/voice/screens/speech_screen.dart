@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../../services/voice_service.dart';
+import '../../../theme/app_colors.dart';
 import '../../../utils/number_parser.dart';
 
 class SpeechScreen extends StatefulWidget {
@@ -80,15 +81,22 @@ class _SpeechScreenState extends State<SpeechScreen> {
     final String? selectedLocaleId = _voiceService.selectedLocaleId;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Voice to Number'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Glub'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           if (indianLocales.isNotEmpty)
             DropdownButton<String>(
               value: selectedLocaleId,
-              icon: const Icon(Icons.language),
-              dropdownColor: Theme.of(context).colorScheme.primaryContainer,
+              icon: const Icon(Icons.language, color: AppColors.textDark),
+              dropdownColor: AppColors.lightGreen,
               underline: const SizedBox(),
               onChanged: (String? newValue) {
                 if (newValue != null) _voiceService.setLocale(newValue);
@@ -110,41 +118,52 @@ class _SpeechScreenState extends State<SpeechScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _listen,
         label: Text(isListening ? 'Listening...' : 'Tap to Speak'),
-        icon: Icon(isListening ? Icons.mic : Icons.mic_none),
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: AppColors.white,
+        icon: const Icon(Icons.mic),
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                'What the engine heard:',
-                style: TextStyle(color: Colors.grey),
-              ),
-              Text(
-                _displayRawText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  fontStyle: FontStyle.italic,
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: AppColors.lightGreen,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'What the engine heard:',
+                  style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                'Extracted Number:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              Text(
-                _displayNumber,
-                style: TextStyle(
-                  fontSize: 64.0,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+                const SizedBox(height: 10),
+                Text(
+                  _displayRawText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18.0,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.textDark,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 40),
+                const Text(
+                  'Extracted Number:',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+                ),
+                Text(
+                  _displayNumber,
+                  style: const TextStyle(
+                    fontSize: 64.0,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGreen,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
