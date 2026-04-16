@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
+import '../../../services/supabase_service.dart';
 import '../../../services/voice_service.dart';
 import '../../../utils/number_parser.dart';
 import '../../onboarding/models/onboarding_data.dart';
@@ -11,13 +12,13 @@ class BloodSugarLevelsScreen extends StatefulWidget {
   const BloodSugarLevelsScreen({super.key, required this.data});
 
   @override
-  State<BloodSugarLevelsScreen> createState() =>
-      _BloodSugarLevelsScreenState();
+  State<BloodSugarLevelsScreen> createState() => _BloodSugarLevelsScreenState();
 }
 
 class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
     with SingleTickerProviderStateMixin {
   late final VoiceService _voiceService;
+  late final SupabaseService _supabaseService;
 
   int? _bloodSugar;
   bool _isListening = false;
@@ -32,18 +33,20 @@ class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
   void initState() {
     super.initState();
     _voiceService = VoiceService();
+    _supabaseService = SupabaseService();
     _voiceService.addListener(_onVoiceUpdate);
-    _tickController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 650),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-        setState(() {
-          _logComplete = true;
-          _isLoggingInProgress = false;
+    _tickController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 650),
+        )..addStatusListener((status) {
+          if (status == AnimationStatus.completed) {
+            setState(() {
+              _logComplete = true;
+              _isLoggingInProgress = false;
+            });
+          }
         });
-        }
-      });
   }
 
   @override
@@ -96,7 +99,9 @@ class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
     }
     if (_tookInsulin == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select whether you took insulin doses.')),
+        const SnackBar(
+          content: Text('Please select whether you took insulin doses.'),
+        ),
       );
       return;
     }
@@ -106,6 +111,19 @@ class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
       _isLoggingInProgress = true;
     });
     _tickController.forward(from: 0);
+
+    // Uses existing variables; Supabase column mapping is handled in the service.
+    final result = await _supabaseService.createBloodSugarLog(
+      bloodSugar: _bloodSugar!,
+      tookInsulin: _tookInsulin!,
+      unit: widget.data.glucoseUnit ?? 'mg/dL',
+    );
+
+    if (!result.isSuccess && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.errorMessage ?? 'Failed to save log.')),
+      );
+    }
   }
 
   @override
@@ -230,8 +248,9 @@ class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
                   child: Icon(
                     Icons.mic,
                     size: 36,
-                    color:
-                        _isListening ? AppColors.primaryGreen : AppColors.textDark,
+                    color: _isListening
+                        ? AppColors.primaryGreen
+                        : AppColors.textDark,
                   ),
                 ),
                 Positioned(
@@ -329,7 +348,9 @@ class _BloodSugarLevelsScreenState extends State<BloodSugarLevelsScreen>
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            onPressed: (_logComplete || _isLoggingInProgress) ? null : _onLogPressed,
+            onPressed: (_logComplete || _isLoggingInProgress)
+                ? null
+                : _onLogPressed,
             child: AnimatedBuilder(
               animation: _tickController,
               builder: (context, child) {
@@ -392,20 +413,20 @@ class _ChoiceButton extends StatelessWidget {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: AppColors.textDark.withValues(
-              alpha: selected ? 38 : 20,
-            ),
+            color: AppColors.textDark.withValues(alpha: selected ? 38 : 20),
           ),
         ),
         child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon,
-                  size: 18,
-                  color: selected
-                      ? AppColors.primaryGreen
-                      : AppColors.textDark.withValues(alpha: 115)),
+              Icon(
+                icon,
+                size: 18,
+                color: selected
+                    ? AppColors.primaryGreen
+                    : AppColors.textDark.withValues(alpha: 115),
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -422,4 +443,3 @@ class _ChoiceButton extends StatelessWidget {
     );
   }
 }
-

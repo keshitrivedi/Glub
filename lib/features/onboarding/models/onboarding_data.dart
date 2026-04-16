@@ -6,6 +6,7 @@ class OnboardingData {
   String? insulinTherapy;
   String? targetRangeHigh;
   String? targetRangeLow;
+  final String? profileId;
 
   OnboardingData({
     this.isTechProficient,
@@ -15,6 +16,7 @@ class OnboardingData {
     this.insulinTherapy,
     this.targetRangeHigh,
     this.targetRangeLow,
+    this.profileId,
   });
 
   @override

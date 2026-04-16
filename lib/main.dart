@@ -3,10 +3,16 @@
 // SpeechScreen, VoiceService, and NumberParser have moved out.
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/onboarding/screens/splash_screen.dart';
 import 'theme/app_colors.dart';
+import 'services/supabase_config.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (isSupabaseConfigured) {
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  }
   runApp(const MyApp());
 }
 

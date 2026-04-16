@@ -68,6 +68,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   late final TextEditingController _companyController;
   late final TextEditingController _quantityController;
   late final TextEditingController _notesController;
+  late final TextEditingController _buildBottomActions;
 
   late final TextEditingController _targetLowController;
   late final TextEditingController _targetHighController;
@@ -225,33 +226,22 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                             _buildDropdownField(
                               label: 'Injection site',
                               value: _injectionSite,
-                              items: const [
-                                'Abdomen',
-                                'Thigh',
-                                'Arm',
-                                'Other'
-                              ],
+                              items: const ['Abdomen', 'Thigh', 'Arm', 'Other'],
                               onChanged: (v) {
                                 setState(() => _injectionSite = v ?? 'Abdomen');
                               },
                             ),
                             const SizedBox(height: 14),
                           ],
-
                           const Divider(height: 26),
-
                           _buildDoseRow(),
                           const SizedBox(height: 14),
-
                           _buildTimePickerField(),
                           const SizedBox(height: 14),
-
                           _buildDaysOfWeekSelector(),
                           const SizedBox(height: 18),
-
                           _buildToggles(),
                           const SizedBox(height: 14),
-
                           Row(
                             children: [
                               Expanded(
@@ -289,15 +279,13 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 14),
                           _buildCheckbox(
                             value: _overrideTargetGlucose,
-                            onChanged: (v) =>
-                                setState(() => _overrideTargetGlucose = v ?? false),
+                            onChanged: (v) => setState(
+                                () => _overrideTargetGlucose = v ?? false),
                             label: 'Override target glucose range',
                           ),
-
                           const SizedBox(height: 14),
                           _buildTextField(
                             label: 'Notes / instructions',
@@ -305,7 +293,6 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                             hint: 'Any extra notes (e.g. before workout)',
                             maxLines: 3,
                           ),
-
                           const SizedBox(height: 18),
                           _buildBottomActions(),
                         ],
@@ -371,7 +358,8 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
         ...List.generate(_loggedMedicines.length, (index) {
           final medicine = _loggedMedicines[index];
           return Container(
-            margin: EdgeInsets.only(bottom: index == _loggedMedicines.length - 1 ? 0 : 10),
+            margin: EdgeInsets.only(
+                bottom: index == _loggedMedicines.length - 1 ? 0 : 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.inputBackground,
@@ -614,7 +602,8 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                 width: 52,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.inputBackground : Colors.transparent,
+                  color:
+                      selected ? AppColors.inputBackground : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: selected
@@ -627,7 +616,9 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                     _weekdayLabels[index],
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: selected ? AppColors.primaryGreen : AppColors.textDark,
+                      color: selected
+                          ? AppColors.primaryGreen
+                          : AppColors.textDark,
                     ),
                   ),
                 ),
@@ -649,8 +640,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
         ),
         _buildCheckbox(
           value: _checkBgBeforeDose,
-          onChanged: (v) =>
-              setState(() => _checkBgBeforeDose = v ?? false),
+          onChanged: (v) => setState(() => _checkBgBeforeDose = v ?? false),
           label: 'Check blood sugar before dose',
         ),
       ],
@@ -681,8 +671,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   }
 
   LoggedMedicine _buildLoggedMedicine(BuildContext context) {
-    final selectedDayLabels = _selectedDays.toList()
-      ..sort();
+    final selectedDayLabels = _selectedDays.toList()..sort();
 
     return LoggedMedicine(
       medicineName: _medicineNameController.text.trim(),
@@ -757,7 +746,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
     );
   }
 
-  void _saveAndContinue() {
+  Future<void> _saveAndContinue() async {
     if (_medicineNameController.text.trim().isNotEmpty ||
         _companyController.text.trim().isNotEmpty ||
         _selectedDays.isNotEmpty) {
@@ -773,89 +762,102 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
           content: Text('Add at least one medicine before continuing.'),
         ),
       );
-      return;
+      for (final medicine in _loggedMedicines) {
+        final result = await _supabaseService.saveMedicineLog(
+          profileId: widget.data.profileId ??
+              '', // pass profileId through OnboardingData
+          medicine: medicine,
+        );
+        if (!result.isSuccess && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'Failed to save ${medicine.medicineName}: ${result.errorMessage}')),
+          );
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'}.',
+            ),
+          ),
+        );
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => ActionSelectionScreen(data: widget.data),
+          ),
+          (route) => false,
+        );
+      }
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'}.',
-        ),
-      ),
-    );
-
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => ActionSelectionScreen(data: widget.data),
-      ),
-      (route) => false,
-    );
-  }
-
-  Widget _buildBottomActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => ActionSelectionScreen(data: widget.data),
-              ),
-              (route) => false,
-            );
-          },
-          child: const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '< Back to actions',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textDark,
-                fontWeight: FontWeight.w600,
+    Widget _buildBottomActions() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ActionSelectionScreen(data: widget.data),
+                ),
+                (route) => false,
+              );
+            },
+            child: const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '< Back to actions',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: _addAnotherMedicine,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primaryGreen,
-              side: const BorderSide(color: AppColors.primaryGreen),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: _addAnotherMedicine,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryGreen,
+                side: const BorderSide(color: AppColors.primaryGreen),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Add another medicine',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ),
-            icon: const Icon(Icons.add),
-            label: const Text(
-              'Add another medicine',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGreen,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 52,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              onPressed: _saveAndContinue,
+              child: const Text(
+                'Save medicines',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ),
-            onPressed: _saveAndContinue,
-            child: const Text(
-              'Save medicines',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
   }
 }
-
