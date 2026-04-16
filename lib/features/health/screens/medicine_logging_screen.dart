@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../config/supabase_config.dart';
 import '../../../theme/app_colors.dart';
 import '../../onboarding/models/onboarding_data.dart';
 import '../../onboarding/screens/action_selection_screen.dart';
@@ -86,6 +88,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   bool _takeWithFood = false;
   bool _checkBgBeforeDose = true;
   bool _overrideTargetGlucose = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -758,6 +761,8 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
   }
 
   void _saveAndContinue() {
+    if (_isSaving) return;
+
     if (_medicineNameController.text.trim().isNotEmpty ||
         _companyController.text.trim().isNotEmpty ||
         _selectedDays.isNotEmpty) {
@@ -776,20 +781,77 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'}.',
-        ),
-      ),
-    );
+    _persistAndContinue();
+  }
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => ActionSelectionScreen(data: widget.data),
-      ),
-      (route) => false,
-    );
+  Future<void> _persistAndContinue() async {
+    if (_loggedMedicines.isEmpty) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      if (!SupabaseConfig.isConfigured) {
+        throw Exception(
+          'Supabase is not configured. Please pass SUPABASE_URL and SUPABASE_ANON_KEY.',
+        );
+      }
+      if (SupabaseConfig.profileId.isEmpty) {
+        throw Exception(
+          'PROFILE_ID is required for medicine_logs insert. '
+          'Pass --dart-define=PROFILE_ID=<existing onboarding_profiles.profile_id>',
+        );
+      }
+
+      final rows = _loggedMedicines.map((m) {
+        return {
+          'profile_id': SupabaseConfig.profileId,
+          'medicine_name': m.medicineName,
+          'company': m.company,
+          'medicine_type': m.medicineType,
+          'oral_timing': m.oralTiming,
+          'dose_unit': m.doseUnit,
+          'insulin_profile': m.insulinProfile,
+          'injection_site': m.injectionSite,
+          'quantity': m.quantity,
+          'dose_time': m.doseTime,
+          'days': m.days,
+          'take_with_food': m.takeWithFood,
+          'check_bg_before_dose': m.checkBgBeforeDose,
+          'override_target_glucose': m.overrideTargetGlucose,
+          'target_low': m.targetLow,
+          'target_high': m.targetHigh,
+          'notes': m.notes,
+        };
+      }).toList();
+
+      await Supabase.instance.client.from('medicine_logs').insert(rows);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Saved ${_loggedMedicines.length} medicine${_loggedMedicines.length == 1 ? '' : 's'} to database.',
+          ),
+        ),
+      );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => ActionSelectionScreen(data: widget.data),
+        ),
+        (route) => false,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save medicine logs: $error'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   Widget _buildBottomActions() {
@@ -821,7 +883,7 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
         SizedBox(
           height: 52,
           child: OutlinedButton.icon(
-            onPressed: _addAnotherMedicine,
+            onPressed: _isSaving ? null : _addAnotherMedicine,
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primaryGreen,
               side: const BorderSide(color: AppColors.primaryGreen),
@@ -847,11 +909,17 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            onPressed: _saveAndContinue,
-            child: const Text(
-              'Save medicines',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
+            onPressed: _isSaving ? null : _saveAndContinue,
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text(
+                    'Save medicines',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
           ),
         ),
       ],

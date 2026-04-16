@@ -1,4 +1,5 @@
 class OnboardingData {
+  String? profileId;
   bool? isTechProficient;
   String? diabetesType;
   String? glucoseUnit;
@@ -8,6 +9,7 @@ class OnboardingData {
   String? targetRangeLow;
 
   OnboardingData({
+    this.profileId,
     this.isTechProficient,
     this.diabetesType,
     this.glucoseUnit,
@@ -19,6 +21,6 @@ class OnboardingData {
 
   @override
   String toString() {
-    return 'OnboardingData(isTechProficient: $isTechProficient, diabetesType: $diabetesType, glucoseUnit: $glucoseUnit, carbsUnit: $carbsUnit, insulinTherapy: $insulinTherapy, targetRangeHigh: $targetRangeHigh, targetRangeLow: $targetRangeLow)';
+    return 'OnboardingData(profileId: $profileId, isTechProficient: $isTechProficient, diabetesType: $diabetesType, glucoseUnit: $glucoseUnit, carbsUnit: $carbsUnit, insulinTherapy: $insulinTherapy, targetRangeHigh: $targetRangeHigh, targetRangeLow: $targetRangeLow)';
   }
 }
