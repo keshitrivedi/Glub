@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
+import '../../health/screens/blood_sugar_levels_screen.dart';
+import '../models/onboarding_data.dart';
 import '../../voice/screens/speech_screen.dart';
 
 class ActionSelectionScreen extends StatelessWidget {
-  const ActionSelectionScreen({super.key});
+  final OnboardingData data;
+
+  const ActionSelectionScreen({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    // The background color from the image seems to be a light green,
-    // we use a close match but you can also use AppColors.background if preferred for consistency.
-    const Color screenBackground = Color(0xFFC1D690); 
-
     return Scaffold(
-      backgroundColor: screenBackground,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -45,7 +45,7 @@ class ActionSelectionScreen extends StatelessWidget {
                         fontFamily: 'Inter',
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                      color: AppColors.textDark,
                       ),
                     ),
                   ),
@@ -69,7 +69,7 @@ class ActionSelectionScreen extends StatelessWidget {
                 child: _buildActionButton(
                   context: context,
                   label: 'Logging',
-                  onTap: () => _navigateToVoice(context),
+                  onTap: () => _navigateToBloodSugarLogging(context),
                 ),
               ),
               const SizedBox(height: 24),
@@ -99,7 +99,7 @@ class ActionSelectionScreen extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF38513B), // Dark Green matching the image
+          color: AppColors.primaryGreen,
           borderRadius: BorderRadius.circular(32),
         ),
         child: Center(
@@ -119,6 +119,15 @@ class ActionSelectionScreen extends StatelessWidget {
   void _navigateToVoice(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const SpeechScreen()),
+      (Route<dynamic> route) => false,
+    );
+  }
+
+  void _navigateToBloodSugarLogging(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => BloodSugarLevelsScreen(data: data),
+      ),
       (Route<dynamic> route) => false,
     );
   }

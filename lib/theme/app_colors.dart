@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color background = Color(0xFFF2EFE5); // Soft beige
-  static const Color textDark = Color(0xFF334B3C);   // Dark green text
-  static const Color primaryGreen = Color(0xFF4A6B53); // Dark green buttons
-  static const Color lightGreen = Color(0xFFE4EBDB); // Light green background for cards
+  // Screen background (outer)
+  static const Color background = Color(0xFFC1D690);
+  // Main dark text and accents
+  static const Color textDark = Color(0xFF334B3C);
+  // Primary CTA buttons
+  static const Color primaryGreen = Color(0xFF38513B);
+  // Card / container background (inner)
+  static const Color lightGreen = Color(0xFFE4EBDB);
+
+  // Input field background (like the speech/mic field)
+  static const Color inputBackground = Color(0xFFF2EFE5);
+
+  // Subtle borders / separators
+  static const Color border = Color(0xFF334B3C);
+
+  // Confirmation success
+  static const Color success = Color(0xFF2F7D32);
+
   static const Color white = Colors.white;
 }

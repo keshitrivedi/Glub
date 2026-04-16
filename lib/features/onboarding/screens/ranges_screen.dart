@@ -28,7 +28,9 @@ class _RangesScreenState extends State<RangesScreen> {
 
     if (widget.data.isTechProficient == false) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const ActionSelectionScreen()),
+        MaterialPageRoute(
+          builder: (context) => ActionSelectionScreen(data: widget.data),
+        ),
         (Route<dynamic> route) => false,
       );
     } else {
@@ -55,6 +57,11 @@ class _RangesScreenState extends State<RangesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const Text(
+          'Glub',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
@@ -80,7 +87,7 @@ class _RangesScreenState extends State<RangesScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: AppColors.lightGreen,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -183,7 +190,10 @@ class _RangesScreenState extends State<RangesScreen> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.textDark.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color:
+                                AppColors.textDark.withValues(alpha: 77),
+                          ),
                         ),
                       ),
                     ),
@@ -239,7 +249,10 @@ class _RangesScreenState extends State<RangesScreen> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.textDark.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color:
+                                AppColors.textDark.withValues(alpha: 77),
+                          ),
                         ),
                       ),
                     ),
@@ -259,7 +272,10 @@ class _RangesScreenState extends State<RangesScreen> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.textDark.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color:
+                                AppColors.textDark.withValues(alpha: 77),
+                          ),
                         ),
                       ),
                     ),
