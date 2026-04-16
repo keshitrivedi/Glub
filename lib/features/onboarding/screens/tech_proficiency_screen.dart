@@ -13,6 +13,19 @@ class TechProficiencyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Glub',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0),
@@ -41,12 +54,14 @@ class TechProficiencyScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.white,
+                  backgroundColor: AppColors.inputBackground,
                   foregroundColor: AppColors.textDark,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: AppColors.textDark.withOpacity(0.5)),
+                    side: BorderSide(
+                      color: AppColors.textDark.withValues(alpha: 128),
+                    ),
                   ),
                   elevation: 0,
                 ),
@@ -64,12 +79,14 @@ class TechProficiencyScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.white,
+                  backgroundColor: AppColors.inputBackground,
                   foregroundColor: AppColors.textDark,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: AppColors.textDark.withOpacity(0.5)),
+                    side: BorderSide(
+                      color: AppColors.textDark.withValues(alpha: 128),
+                    ),
                   ),
                   elevation: 0,
                 ),

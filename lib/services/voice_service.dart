@@ -90,4 +90,14 @@ class VoiceService extends ChangeNotifier {
     _selectedLocaleId = localeId;
     notifyListeners();
   }
+
+  // ── Reset recognised words + stop any active listening ───────────────────
+  void reset() {
+    if (_isListening) {
+      _isListening = false;
+      _speech.stop();
+    }
+    _rawText = '';
+    notifyListeners();
+  }
 }
