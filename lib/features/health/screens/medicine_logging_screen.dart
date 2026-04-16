@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/notification_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../onboarding/models/onboarding_data.dart';
 import '../../onboarding/screens/action_selection_screen.dart';
@@ -789,6 +790,21 @@ class _MedicineLoggingScreenState extends State<MedicineLoggingScreen> {
 
     // Medicines are stored in-memory only. Database logging is disabled.
     await Future.delayed(const Duration(milliseconds: 300)); // simulate brief save
+
+    // Schedule a notification for each medicine due today.
+    final List<Map<String, dynamic>> medicinePayloads = _loggedMedicines
+        .map(
+          (m) => {
+            'medicineName': m.medicineName,
+            'quantity': m.quantity,
+            'doseUnit': m.doseUnit,
+            'doseTime': m.doseTime,
+            'days': m.days,
+          },
+        )
+        .toList();
+
+    await NotificationService.instance.scheduleMedicineReminders(medicinePayloads);
 
     if (!mounted) return;
 
