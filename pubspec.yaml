@@ -16,6 +16,7 @@ dependencies:
   flutter_svg: ^2.2.4
   webview_flutter: ^4.13.0
   webview_win_floating: ^3.0.2
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:
